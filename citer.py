@@ -17,10 +17,11 @@ if reloader_name in sys.modules:
 
 if os.path.dirname(__file__) not in sys.path:
     sys.path.append(os.path.dirname(__file__))
+    sys.path.append(os.path.join(os.path.dirname(__file__), 'python-bibtexparser'))
 
 
-from .bibtexparser.bparser import BibTexParser
-from .bibtexparser.customization import convert_to_unicode
+from bibtexparser.bparser import BibTexParser
+from bibtexparser.customization import convert_to_unicode
 
 
 # cache values in here for moar speedy
@@ -31,6 +32,8 @@ LST_MOD_TIME = None
 QUICKVIEW_FORMAT = "{citekey} - {title}"  # this could be configurable
 ENABLE_COMPLETIONS = None
 COMPLETIONS_SCOPES = None
+
+_EXCLUDE = None
 
 _DOCUMENTS = None
 _MENU = None
@@ -45,6 +48,7 @@ def plugin_loaded():
     global CITATION_FORMAT
     global COMPLETIONS_SCOPES
     global ENABLE_COMPLETIONS
+    global _EXCLUDE
 
     settings = sublime.load_settings('Citer.sublime-settings')
     BIBFILE_PATH = settings.get('bibtex_file_path')
@@ -54,6 +58,7 @@ def plugin_loaded():
     CITATION_FORMAT = settings.get('citation_format', "@%s")
     COMPLETIONS_SCOPES = settings.get('completions_scopes', ['text'])
     ENABLE_COMPLETIONS = settings.get('enable_completions', True)
+    _EXCLUDE = settings.get('hide_other_completions', True)
 
 
 def plugin_unloaded():
@@ -213,8 +218,8 @@ class CiterCompleteCitationEventListener(sublime_plugin.EventListener):
             search = prefix.replace('@', '').lower()
 
             results = [[key, key] for key in citekeys_list() if search in key.lower()]
-            return results
-            # if len(results) > 0:
-            #      return (results, sublime.INHIBIT_WORD_COMPLETIONS)
-            # else:
-            #    return []
+
+            if _EXCLUDE and len(results) > 0:
+                return (results, sublime.INHIBIT_WORD_COMPLETIONS)
+            else:
+                return results
