@@ -37,8 +37,9 @@ See below for example configuration
 
 # Commands
 
-Citer: Search - enter a search term. All results where the term is found in the author, title, citekey, or year fields will be shown (the searched fields are configurable)
-Citer: Show All - show all the entries in your bibtex in a quick view (you can then search in the title)
+**Citer: Search** - enter a search term. All results where the term is found in the author, title, citekey, or year fields will be shown (the searched fields are configurable)
+
+**Citer: Show All** - show all the entries in your bibtex in a quick view (you can then search in the title)
 
 # Completions
 
