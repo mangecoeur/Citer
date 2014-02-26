@@ -14,7 +14,7 @@ Optionally you can define the bibtex fields to search in when using Citer: Searc
 See below for example configuration
 
 
-```json
+```js
 {
     //REQUIRED:
 
