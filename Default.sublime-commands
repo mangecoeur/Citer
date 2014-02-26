@@ -1,0 +1,14 @@
+[
+    {
+        "caption": "Citer: Show All",
+        "command": "citer_show_keys"
+    },
+    {
+        "caption": "Citer: Search", 
+        "command": "citer_search"
+    },
+    {
+        "caption": "Citer: Insert Title", 
+        "command": "citer_get_title"
+    }
+]
