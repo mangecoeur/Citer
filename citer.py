@@ -1,3 +1,4 @@
+from __future__ import print_function, absolute_import, division
 import sublime
 import sublime_plugin
 
@@ -10,7 +11,6 @@ reloader_name = 'citer.reloader'
 reloader_name = 'Citer.' + reloader_name
 from imp import reload
 
-# print(sys.modules)
 # Make sure all dependencies are reloaded on upgrade
 if reloader_name in sys.modules:
     reload(sys.modules[reloader_name])
