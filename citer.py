@@ -35,7 +35,7 @@ COMPLETIONS_SCOPES = None
 
 _EXCLUDE = None
 
-_DOCUMENTS = None
+_DOCUMENTS = []
 _MENU = None
 _CITEKEYS = None
 
@@ -56,9 +56,10 @@ def plugin_loaded():
         sublime.status_message("WARNING: No bitex file configured for Citer")
     SEARCH_IN = settings.get('search_fields', ["author", "title", "year", "id"])
     CITATION_FORMAT = settings.get('citation_format', "@%s")
-    COMPLETIONS_SCOPES = settings.get('completions_scopes', ['text'])
+    COMPLETIONS_SCOPES = settings.get('completions_scopes', ['text.html.markdown'])
     ENABLE_COMPLETIONS = settings.get('enable_completions', True)
     _EXCLUDE = settings.get('hide_other_completions', True)
+    refresh_caches()
 
 
 def plugin_unloaded():
@@ -67,6 +68,7 @@ def plugin_unloaded():
 
 def refresh_caches():
     global LST_MOD_TIME
+    global _DOCUMENTS
     global _MENU
     global _CITEKEYS
 
@@ -76,7 +78,7 @@ def refresh_caches():
 
         with open(BIBFILE_PATH, 'r', encoding="utf-8") as bibfile:
             bp = BibTexParser(bibfile, customization=convert_to_unicode)
-            _DOCUMENTS = bp.get_entry_list()
+            _DOCUMENTS = list(bp.get_entry_list())
             _MENU = _make_citekey_menu_list(_DOCUMENTS)
             _CITEKEYS = [doc.get('id') for doc in _DOCUMENTS]
 
@@ -94,9 +96,14 @@ def _make_citekey_menu_list(bibdocs):
         title = QUICKVIEW_FORMAT.format(
             citekey=doc.get('id'), title=doc.get('title'))
         menu_entry.append(title)
-
         citekeys.append(menu_entry)
+    citekeys = sorted(citekeys)
     return citekeys
+
+
+def documents():
+    refresh_caches()
+    return _DOCUMENTS
 
 
 def citekeys_menu():
@@ -117,7 +124,7 @@ class CiterSearchCommand(sublime_plugin.TextCommand):
 
     def search_keyword(self, search_term):
         results = {}
-        for doc in _DOCUMENTS:
+        for doc in documents():
             for section_name in SEARCH_IN:
                 section_text = doc.get(section_name)
                 if section_text and search_term.lower() in section_text.lower():
