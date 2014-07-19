@@ -17,7 +17,7 @@ if reloader_name in sys.modules:
 
 if os.path.dirname(__file__) not in sys.path:
     sys.path.append(os.path.dirname(__file__))
-    sys.path.append(os.path.join(os.path.dirname(__file__), 'python-bibtexparser'))
+    #sys.path.append(os.path.join(os.path.dirname(__file__), 'python-bibtexparser'))
 
 
 from bibtexparser.bparser import BibTexParser
@@ -188,7 +188,6 @@ class CiterShowKeysCommand(sublime_plugin.TextCommand):
 
 
 class CiterGetTitleCommand(sublime_plugin.TextCommand):
-
     """
     """
     current_results_list = []
