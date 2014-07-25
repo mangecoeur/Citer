@@ -77,7 +77,7 @@ def refresh_caches():
     if LST_MOD_TIME is None or last_modified_time != LST_MOD_TIME:
 
         with open(BIBFILE_PATH, 'r', encoding="utf-8") as bibfile:
-            bp = BibTexParser(bibfile, customization=convert_to_unicode)
+            bp = BibTexParser(bibfile.read(), customization=convert_to_unicode)
             _DOCUMENTS = list(bp.get_entry_list())
             _MENU = _make_citekey_menu_list(_DOCUMENTS)
             _CITEKEYS = [doc.get('id') for doc in _DOCUMENTS]
