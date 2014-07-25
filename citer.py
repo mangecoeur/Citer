@@ -75,7 +75,7 @@ def refresh_caches():
     last_modified_time = os.path.getmtime(BIBFILE_PATH)
 
     if LST_MOD_TIME is None or last_modified_time != LST_MOD_TIME:
-
+        LST_MOD_TIME = last_modified_time
         with open(BIBFILE_PATH, 'r', encoding="utf-8") as bibfile:
             bp = BibTexParser(bibfile.read(), customization=convert_to_unicode)
             _DOCUMENTS = list(bp.get_entry_list())
