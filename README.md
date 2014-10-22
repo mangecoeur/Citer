@@ -29,7 +29,7 @@ See below for example configuration
     "citation_format": "@%s",
     //list of scopes. Could be top level "text" or "source", or limit to
     // e.g "text.html.markdown"
-    "completions_scopes": ['text'],
+    "completions_scopes": ["text"],
     "enable_completions": True
 }
 ```
