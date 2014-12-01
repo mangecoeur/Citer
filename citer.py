@@ -53,7 +53,7 @@ def plugin_loaded():
     settings = sublime.load_settings('Citer.sublime-settings')
     BIBFILE_PATH = settings.get('bibtex_file_path')
     if BIBFILE_PATH is None or BIBFILE_PATH == '':
-        sublime.status_message("WARNING: No bitex file configured for Citer")
+        sublime.status_message("WARNING: No BibTex file configured for Citer")
     SEARCH_IN = settings.get('search_fields', ["author", "title", "year", "id"])
     CITATION_FORMAT = settings.get('citation_format', "@%s")
     COMPLETIONS_SCOPES = settings.get('completions_scopes', ['text.html.markdown'])
