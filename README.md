@@ -30,7 +30,7 @@ See below for example configuration
     //list of scopes. Could be top level "text" or "source", or limit to
     // e.g "text.html.markdown"
     "completions_scopes": ["text"],
-    "enable_completions": True
+    "enable_completions": true
 }
 ```
 
