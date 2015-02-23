@@ -29,7 +29,6 @@ BIBFILE_PATH = None
 SEARCH_IN = None
 CITATION_FORMAT = None
 LST_MOD_TIME = None
-QUICKVIEW_FORMAT = "{citekey} - {title}"  # this could be configurable
 ENABLE_COMPLETIONS = None
 COMPLETIONS_SCOPES = None
 
@@ -49,8 +48,10 @@ def plugin_loaded():
     global COMPLETIONS_SCOPES
     global ENABLE_COMPLETIONS
     global _EXCLUDE
+    global QUICKVIEW_FORMAT
 
     settings = sublime.load_settings('Citer.sublime-settings')
+
     BIBFILE_PATH = settings.get('bibtex_file_path')
     if BIBFILE_PATH is None or BIBFILE_PATH == '':
         sublime.status_message("WARNING: No BibTex file configured for Citer")
@@ -59,11 +60,31 @@ def plugin_loaded():
     COMPLETIONS_SCOPES = settings.get('completions_scopes', ['text.html.markdown'])
     ENABLE_COMPLETIONS = settings.get('enable_completions', True)
     _EXCLUDE = settings.get('hide_other_completions', True)
+    QUICKVIEW_FORMAT = settings.get('quickview_format', '{citekey} - {title}')
     refresh_caches()
 
 
 def plugin_unloaded():
     pass
+
+# PARSE AUTHORS. Formats:
+# Single Author: Lastname
+# Two Authors: Lastname1 and Lastname2
+# Three or More Authors: Lastname 1 et al.
+
+def autparse(auth):
+    try:
+        aut = re.findall(r'\w+(?=,)',auth)
+        lat = len(aut)
+        if lat==1:
+            autt = aut[0]
+        elif lat==2:
+            autt = aut[0] + " and " + aut[1]
+        else:
+            autt = aut[0] + " et. al"
+    except:
+        autt = auth
+    return autt
 
 
 def refresh_caches():
@@ -94,7 +115,7 @@ def _make_citekey_menu_list(bibdocs):
         #    menu_entry.append('  ' + doc.get('title')[90:])
         # else:
         title = QUICKVIEW_FORMAT.format(
-            citekey=doc.get('id'), title=doc.get('title'))
+            citekey=doc.get('id'), author=autparse(doc.get('author')), title=doc.get('title'))
         menu_entry.append(title)
         citekeys.append(menu_entry)
     citekeys = sorted(citekeys)
