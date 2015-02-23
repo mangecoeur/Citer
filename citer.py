@@ -72,7 +72,20 @@ def refresh_caches():
     global _MENU
     global _CITEKEYS
 
-    last_modified_time = os.path.getmtime(BIBFILE_PATH)
+    if isinstance(BIBFILE_PATH, list):
+        last_modified_time = [os.path.getmtime(x) for x in BIBFILE_PATH]
+
+        if LST_MOD_TIME is None or last_modified_time != LST_MOD_TIME:
+            LST_MOD_TIME = last_modified_time
+            for ldoc in BIBFILE_PATH:
+                with open(BIBFILE_PATH, 'r', encoding="utf-8") as bibfile:
+                    bp = BibTexParser(ldoc.read(), customization=convert_to_unicode)
+                    _DOCUMENTS.append(list(bp.get_entry_list()))
+            _MENU = _make_citekey_menu_list(_DOCUMENTS)
+            _CITEKEYS = [doc.get('id') for doc in _DOCUMENTS]
+
+    else:
+       last_modified_time = os.path.getmtime(BIBFILE_PATH)
 
     if LST_MOD_TIME is None or last_modified_time != LST_MOD_TIME:
         LST_MOD_TIME = last_modified_time
@@ -81,7 +94,6 @@ def refresh_caches():
             _DOCUMENTS = list(bp.get_entry_list())
             _MENU = _make_citekey_menu_list(_DOCUMENTS)
             _CITEKEYS = [doc.get('id') for doc in _DOCUMENTS]
-
 
 # Do some fancy build to get a sane list in the UI
 def _make_citekey_menu_list(bibdocs):
