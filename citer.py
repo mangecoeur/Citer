@@ -72,7 +72,8 @@ class FindReplaceBracketCommand(sublime_plugin.TextCommand):
         lstpos = self.view.find_all(r'\]\[')
         for i, pos in reversed(list(enumerate(lstpos))):
             self.view.replace(edit, pos, r'; ')
-
+        for i, pos in reversed(list(enumerate(lstpos2))):
+            self.view.replace(edit, pos, r']')
 
 def refresh_caches():
     global LST_MOD_TIME
