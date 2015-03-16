@@ -49,6 +49,7 @@ def plugin_loaded():
     global COMPLETIONS_SCOPES
     global ENABLE_COMPLETIONS
     global _EXCLUDE
+    global PANDOC_FIX
 
     settings = sublime.load_settings('Citer.sublime-settings')
     BIBFILE_PATH = settings.get('bibtex_file_path')
@@ -58,6 +59,7 @@ def plugin_loaded():
     CITATION_FORMAT = settings.get('citation_format', "@%s")
     COMPLETIONS_SCOPES = settings.get('completions_scopes', ['text.html.markdown'])
     ENABLE_COMPLETIONS = settings.get('enable_completions', True)
+    PANDOC_FIX = settings.get('pandoc_cite_fix', False)
     _EXCLUDE = settings.get('hide_other_completions', True)
     refresh_caches()
 
@@ -65,6 +67,13 @@ def plugin_loaded():
 def plugin_unloaded():
     pass
 
+class FindReplaceBracketCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        lstpos = self.view.find_all(r'\]\[')
+        for i, pos in reversed(list(enumerate(lstpos))):
+            self.view.replace(edit, pos, r'; ')
+        for i, pos in reversed(list(enumerate(lstpos2))):
+            self.view.replace(edit, pos, r']')
 
 def refresh_caches():
     global LST_MOD_TIME
@@ -155,7 +164,11 @@ class CiterSearchCommand(sublime_plugin.TextCommand):
         ent = self.current_results_list[item]
         ent = ent.split(' ')[0]
         citekey = CITATION_FORMAT % ent
-        self.view.run_command('insert', {'characters': citekey})
+        if PANDOC_FIX:
+            self.view.run_command('insert', {'characters': citekey})
+            self.view.run_command('find_replace_bracket')
+        else:
+            self.view.run_command('insert', {'characters': citekey})
 
 
 class CiterShowKeysCommand(sublime_plugin.TextCommand):
@@ -184,7 +197,11 @@ class CiterShowKeysCommand(sublime_plugin.TextCommand):
         ent = self.current_results_list[item][0]
         ent = ent.split(' ')[0]
         citekey = CITATION_FORMAT % ent
-        self.view.run_command('insert', {'characters': citekey})
+        if PANDOC_FIX:
+            self.view.run_command('insert', {'characters': citekey})
+            self.view.run_command('find_replace_bracket')
+        else:
+            self.view.run_command('insert', {'characters': citekey})
 
 
 class CiterGetTitleCommand(sublime_plugin.TextCommand):
