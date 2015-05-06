@@ -4,6 +4,8 @@ import sublime_plugin
 
 import sys
 import os.path
+import re
+import string
 
 # ST3 loads each package as a module, so it needs an extra prefix
 
@@ -29,9 +31,10 @@ BIBFILE_PATH = None
 SEARCH_IN = None
 CITATION_FORMAT = None
 LST_MOD_TIME = None
-QUICKVIEW_FORMAT = "{citekey} - {title}"  # this could be configurable
+QUICKVIEW_FORMAT = None
 ENABLE_COMPLETIONS = None
 COMPLETIONS_SCOPES = None
+PANDOC_FIX = None
 
 _EXCLUDE = None
 
@@ -50,6 +53,7 @@ def plugin_loaded():
     global ENABLE_COMPLETIONS
     global _EXCLUDE
     global PANDOC_FIX
+    global QUICKVIEW_FORMAT
 
     settings = sublime.load_settings('Citer.sublime-settings')
     BIBFILE_PATH = settings.get('bibtex_file_path')
@@ -59,7 +63,8 @@ def plugin_loaded():
     CITATION_FORMAT = settings.get('citation_format', "@%s")
     COMPLETIONS_SCOPES = settings.get('completions_scopes', ['text.html.markdown'])
     ENABLE_COMPLETIONS = settings.get('enable_completions', True)
-    PANDOC_FIX = settings.get('pandoc_cite_fix', False)
+    QUICKVIEW_FORMAT = settings.get('quickview_format', '{citekey} - {title}')
+    PANDOC_FIX = settings.get('auto_merge_citations', False)
     _EXCLUDE = settings.get('hide_other_completions', True)
     refresh_caches()
 
@@ -83,34 +88,64 @@ def refresh_caches():
                 with open(single_path, 'r', encoding="utf-8") as bibfile:
                     bp = BibTexParser(bibfile.read(), customization=convert_to_unicode)
                     _DOCUMENTS += list(bp.get_entry_list())
-            _MENU = _make_citekey_menu_list(_DOCUMENTS)
-            _CITEKEYS = [doc.get('id') for doc in _DOCUMENTS]
 
     else:
         last_modified_time = os.path.getmtime(BIBFILE_PATH)
+        if LST_MOD_TIME is None or last_modified_time != LST_MOD_TIME:
+            LST_MOD_TIME = last_modified_time
+            with open(BIBFILE_PATH, 'r', encoding="utf-8") as bibfile:
+                bp = BibTexParser(bibfile.read(), customization=convert_to_unicode)
+                _DOCUMENTS = list(bp.get_entry_list())
+    _CITEKEYS = [doc.get('id') for doc in _DOCUMENTS]
+    _MENU = _make_citekey_menu_list(_DOCUMENTS)
 
-    if LST_MOD_TIME is None or last_modified_time != LST_MOD_TIME:
-        LST_MOD_TIME = last_modified_time
-        with open(BIBFILE_PATH, 'r', encoding="utf-8") as bibfile:
-            bp = BibTexParser(bibfile.read(), customization=convert_to_unicode)
-            _DOCUMENTS = list(bp.get_entry_list())
-            _MENU = _make_citekey_menu_list(_DOCUMENTS)
-            _CITEKEYS = [doc.get('id') for doc in _DOCUMENTS]
 
 # Do some fancy build to get a sane list in the UI
+class SafeDict(dict):
+    def __missing__(self, key):
+        return '{' + key + '}'
+
+
+def _parse_authors(auth):
+    """
+    PARSE AUTHORS. Formats:
+    Single Author: Lastname
+    Two Authors: Lastname1 and Lastname2
+    Three or More Authors: Lastname 1 et al.
+    """
+    try:
+        authors = auth.split(' and ')
+        lat = len(authors)
+        if lat == 1:
+            authors_abbr = authors[0]
+        elif lat == 2:
+            authors_abbr = authors[0] + " and " + authors[1]
+        else:
+            authors_abbr = authors[0] + " et. al"
+    except:
+        authors_abbr = auth
+    return authors_abbr
 
 
 def _make_citekey_menu_list(bibdocs):
     citekeys = []
     for doc in bibdocs:
         menu_entry = []
-        # if len(doc.get('title')) > 90:
-        #    title = doc.get('id') + ' - ' + doc.get('title')[0:90]
-        #    menu_entry.append(title)
-        #    menu_entry.append('  ' + doc.get('title')[90:])
-        # else:
-        title = QUICKVIEW_FORMAT.format(
-            citekey=doc.get('id'), title=doc.get('title'))
+
+        if doc.get('author') is not None:
+            auths = _parse_authors(doc.get('author'))
+        else:
+            auths = 'Anon'
+        title = string.Formatter().vformat(QUICKVIEW_FORMAT, (),
+                                           SafeDict(
+                                                    citekey=doc.get('id'),
+                                                    title=doc.get('title'),
+                                                    author=auths,
+                                                    year=doc.get('year')
+                                                    )
+                                           )
+        # title = QUICKVIEW_FORMAT.format(
+        #     citekey=doc.get('id'), title=doc.get('title'))
         menu_entry.append(title)
         citekeys.append(menu_entry)
     citekeys = sorted(citekeys)
@@ -173,7 +208,7 @@ class CiterSearchCommand(sublime_plugin.TextCommand):
         citekey = CITATION_FORMAT % ent
         if PANDOC_FIX:
             self.view.run_command('insert', {'characters': citekey})
-            self.view.run_command('find_replace_bracket')
+            self.view.run_command('citer_combine_citations')
         else:
             self.view.run_command('insert', {'characters': citekey})
 
@@ -206,7 +241,7 @@ class CiterShowKeysCommand(sublime_plugin.TextCommand):
         citekey = CITATION_FORMAT % ent
         if PANDOC_FIX:
             self.view.run_command('insert', {'characters': citekey})
-            self.view.run_command('find_replace_bracket')
+            self.view.run_command('citer_combine_citations')
         else:
             self.view.run_command('insert', {'characters': citekey})
 
@@ -262,4 +297,3 @@ class CiterCombineCitationsCommand(sublime_plugin.TextCommand):
         lstpos = self.view.find_all(r'\]\[')
         for i, pos in reversed(list(enumerate(lstpos))):
             self.view.replace(edit, pos, r'; ')
-

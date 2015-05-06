@@ -10,9 +10,15 @@ Uses the [bibtexparser](https://github.com/sciunto/python-bibtexparser) library 
 
 You must specify the location of your bibtex file or files in preferences. Multiple files can be added as a list.
 
-Optionally you can define the bibtex fields to search in when using Citer: Search, the default citation format, and the list of scopes to limit the operation of the plugin (by default, Citer will only suggest citations within plain text scopes and is disabled in source code).
+Optionally you can define 
+- `search_fields` the bibtex fields to search in when using Citer: Search
+- `citation_format` the citation format
+- `completions_scopes` the list of scopes to limit the operation of the plugin (by default, Citer will only suggest citations within plain text scopes and is disabled in source code)
+- `enable_completions` enable/disable citation completions (when you hit @)
+- `quickview_format` customise the format when listing library entries in the quickvew panel (e.g. with the Citer: Show All command). Place variables beteen `{}` braces. Available variables are `citekey`, `title`, `author`, `year`.
+- `auto_merge_citations` Whether to automatically merge citations that are inserted next to each other. `[@Fred2000][@Mary2001]` becomes `[@Fred2000; @Mary2001]`. Equivalent to running `Citer: Combine adjacent citations` on every insert
 
-See below for example configuration
+See below for example (default) configuration
 
 
 ```js
@@ -33,7 +39,10 @@ See below for example configuration
     //list of scopes. Could be top level "text" or "source", or limit to
     // e.g "text.html.markdown"
     "completions_scopes": ["text"],
-    "enable_completions": true
+    "enable_completions": true,
+    //Customise the quickview of you library, using python format syntax
+    "quickview_format": "{citekey} - {title}",
+    "auto_merge_citations": false
 }
 ```
 
@@ -45,6 +54,9 @@ See below for example configuration
 **Citer: Show All** - show all the entries in your bibtex in a quick view (you can then search in the title)
 
 **Citer: Insert Title** - show all the entries in your bibtex in a searchable quick view, inserts the title
+
+**Citer: Combine adjacent citations** - Combines neighboring citations i.e. `[@Fred2000][@Mary2001]` becomes `[@Fred2000; @Mary2001]`
+
 
 # Completions
 
