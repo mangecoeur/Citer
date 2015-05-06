@@ -67,13 +67,6 @@ def plugin_loaded():
 def plugin_unloaded():
     pass
 
-class FindReplaceBracketCommand(sublime_plugin.TextCommand):
-    def run(self, edit):
-        lstpos = self.view.find_all(r'\]\[')
-        for i, pos in reversed(list(enumerate(lstpos))):
-            self.view.replace(edit, pos, r'; ')
-        for i, pos in reversed(list(enumerate(lstpos2))):
-            self.view.replace(edit, pos, r']')
 
 def refresh_caches():
     global LST_MOD_TIME
@@ -86,15 +79,15 @@ def refresh_caches():
 
         if LST_MOD_TIME is None or last_modified_time != LST_MOD_TIME:
             LST_MOD_TIME = last_modified_time
-            for ldoc in BIBFILE_PATH:
-                with open(BIBFILE_PATH, 'r', encoding="utf-8") as bibfile:
-                    bp = BibTexParser(ldoc.read(), customization=convert_to_unicode)
-                    _DOCUMENTS.append(list(bp.get_entry_list()))
+            for single_path in BIBFILE_PATH:
+                with open(single_path, 'r', encoding="utf-8") as bibfile:
+                    bp = BibTexParser(bibfile.read(), customization=convert_to_unicode)
+                    _DOCUMENTS += list(bp.get_entry_list())
             _MENU = _make_citekey_menu_list(_DOCUMENTS)
             _CITEKEYS = [doc.get('id') for doc in _DOCUMENTS]
 
     else:
-       last_modified_time = os.path.getmtime(BIBFILE_PATH)
+        last_modified_time = os.path.getmtime(BIBFILE_PATH)
 
     if LST_MOD_TIME is None or last_modified_time != LST_MOD_TIME:
         LST_MOD_TIME = last_modified_time
@@ -105,6 +98,8 @@ def refresh_caches():
             _CITEKEYS = [doc.get('id') for doc in _DOCUMENTS]
 
 # Do some fancy build to get a sane list in the UI
+
+
 def _make_citekey_menu_list(bibdocs):
     citekeys = []
     for doc in bibdocs:
@@ -217,6 +212,7 @@ class CiterShowKeysCommand(sublime_plugin.TextCommand):
 
 
 class CiterGetTitleCommand(sublime_plugin.TextCommand):
+
     """
     """
     current_results_list = []
@@ -258,3 +254,12 @@ class CiterCompleteCitationEventListener(sublime_plugin.EventListener):
                 return (results, sublime.INHIBIT_WORD_COMPLETIONS)
             else:
                 return results
+
+
+class CiterCombineCitationsCommand(sublime_plugin.TextCommand):
+
+    def run(self, edit):
+        lstpos = self.view.find_all(r'\]\[')
+        for i, pos in reversed(list(enumerate(lstpos))):
+            self.view.replace(edit, pos, r'; ')
+
