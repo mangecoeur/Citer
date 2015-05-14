@@ -4,7 +4,6 @@ import sublime_plugin
 
 import sys
 import os.path
-import re
 import string
 
 # ST3 loads each package as a module, so it needs an extra prefix
@@ -26,18 +25,18 @@ from bibtexparser.bparser import BibTexParser
 from bibtexparser.customization import convert_to_unicode
 
 
-# cache values in here for moar speedy
+# settings cache globals
 BIBFILE_PATH = None
 SEARCH_IN = None
 CITATION_FORMAT = None
-LST_MOD_TIME = None
 QUICKVIEW_FORMAT = None
 ENABLE_COMPLETIONS = None
 COMPLETIONS_SCOPES = None
 PANDOC_FIX = None
+EXCLUDE = None
 
-_EXCLUDE = None
-
+# Internal Cache globals
+_LST_MOD_TIME = {}
 _DOCUMENTS = []
 _MENU = None
 _CITEKEYS = None
@@ -51,7 +50,7 @@ def plugin_loaded():
     global CITATION_FORMAT
     global COMPLETIONS_SCOPES
     global ENABLE_COMPLETIONS
-    global _EXCLUDE
+    global EXCLUDE
     global PANDOC_FIX
     global QUICKVIEW_FORMAT
 
@@ -65,7 +64,7 @@ def plugin_loaded():
     ENABLE_COMPLETIONS = settings.get('enable_completions', True)
     QUICKVIEW_FORMAT = settings.get('quickview_format', '{citekey} - {title}')
     PANDOC_FIX = settings.get('auto_merge_citations', False)
-    _EXCLUDE = settings.get('hide_other_completions', True)
+    EXCLUDE = settings.get('hide_other_completions', True)
     refresh_caches()
 
 
@@ -73,29 +72,42 @@ def plugin_unloaded():
     pass
 
 
+def bibfile_modifed(bib_path):
+    global _LST_MOD_TIME
+    bib_path = bib_path.strip()
+    last_modified_time = os.path.getmtime(bib_path)
+    cached_modifed_time = _LST_MOD_TIME.get(bib_path)
+    if cached_modifed_time is None or last_modified_time != cached_modifed_time:
+        _LST_MOD_TIME[bib_path] = last_modified_time
+        return True
+    else:
+        return False
+
+
+def load_bibfile(bib_path):
+    bib_path = bib_path.strip()
+    with open(bib_path, 'r', encoding="utf-8") as bibfile:
+        bp = BibTexParser(bibfile.read(), customization=convert_to_unicode)
+        return list(bp.get_entry_list())
+
+
 def refresh_caches():
-    global LST_MOD_TIME
     global _DOCUMENTS
     global _MENU
     global _CITEKEYS
 
     if isinstance(BIBFILE_PATH, list):
-        last_modified_time = [os.path.getmtime(x) for x in BIBFILE_PATH]
-
-        if LST_MOD_TIME is None or last_modified_time != LST_MOD_TIME:
-            LST_MOD_TIME = last_modified_time
+        # To avoid duplicate entries, if any bibfiles modified, reload all of them
+        modified = False
+        for single_path in BIBFILE_PATH:
+            modified = modified or bibfile_modifed(single_path)
+        if modified:
             for single_path in BIBFILE_PATH:
-                with open(single_path, 'r', encoding="utf-8") as bibfile:
-                    bp = BibTexParser(bibfile.read(), customization=convert_to_unicode)
-                    _DOCUMENTS += list(bp.get_entry_list())
-
+                _DOCUMENTS += load_bibfile(single_path)
     else:
-        last_modified_time = os.path.getmtime(BIBFILE_PATH)
-        if LST_MOD_TIME is None or last_modified_time != LST_MOD_TIME:
-            LST_MOD_TIME = last_modified_time
-            with open(BIBFILE_PATH, 'r', encoding="utf-8") as bibfile:
-                bp = BibTexParser(bibfile.read(), customization=convert_to_unicode)
-                _DOCUMENTS = list(bp.get_entry_list())
+        if bibfile_modifed(BIBFILE_PATH):
+            _DOCUMENTS = load_bibfile(BIBFILE_PATH)
+
     _CITEKEYS = [doc.get('id') for doc in _DOCUMENTS]
     _MENU = _make_citekey_menu_list(_DOCUMENTS)
 
@@ -285,7 +297,7 @@ class CiterCompleteCitationEventListener(sublime_plugin.EventListener):
 
             results = [[key, key] for key in citekeys_list() if search in key.lower()]
 
-            if _EXCLUDE and len(results) > 0:
+            if EXCLUDE and len(results) > 0:
                 return (results, sublime.INHIBIT_WORD_COMPLETIONS)
             else:
                 return results

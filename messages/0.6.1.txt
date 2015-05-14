@@ -1,0 +1,5 @@
+Citer 0.6.1
+===========
+
+- Trim whitespace from file paths
+- Code cleanup
