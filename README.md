@@ -15,7 +15,7 @@ Optionally you can define
 - `citation_format` the citation format
 - `completions_scopes` the list of scopes to limit the operation of the plugin (by default, Citer will only suggest citations within plain text scopes and is disabled in source code)
 - `enable_completions` enable/disable citation completions (when you hit @)
-- `quickview_format` customise the format when listing library entries in the quickvew panel (e.g. with the Citer: Show All command). Place variables beteen `{}` braces. Available variables are `citekey`, `title`, `author`, `year`.
+- `quickview_format` customise the format when listing library entries in the quickview panel (e.g. with the Citer: Show All command). Place variables between `{}` braces. Available variables are `citekey`, `title`, `author`, `year`.
 - `auto_merge_citations` Whether to automatically merge citations that are inserted next to each other. `[@Fred2000][@Mary2001]` becomes `[@Fred2000; @Mary2001]`. Equivalent to running `Citer: Combine adjacent citations` on every insert
 
 See below for example (default) configuration
@@ -32,7 +32,7 @@ See below for example (default) configuration
     //OPTIONAL:
 
     //By default Citer Search looks for your keyword in the 
-    //author, title, year, and Citekey (id) feilds
+    //author, title, year, and Citekey (id) fields
     "search_fields": ["author", "title", "year", "id"] ,
     //Default format is @Citekey
     "citation_format": "@%s",
