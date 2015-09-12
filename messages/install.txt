@@ -1,8 +1,8 @@
 # Citations from bibtex for Sublime Text
 
-This Sublime Text 3 plugin provides citation search and Tab-completion for citations stored in a bibtex file. Configure the file path and you are good to go!
+This [Sublime Text 3](https://www.sublimetext.com/3) plugin provides citation search and Tab-completion for citations stored in a BibTeX file. Configure the file path and you are good to go!
 
-The default set up is optimized to work with AcademicMarkdown.
+The default set up is optimized to work with [AcademicMarkdown](https://github.com/mangecoeur/AcademicMarkdown).
 
 Uses the [bibtexparser](https://github.com/sciunto/python-bibtexparser) library from sciunto.
 
