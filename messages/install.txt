@@ -1,4 +1,4 @@
-# Citations from bibtex for Sublime Text
+# Citations from BibTeX for Sublime Text
 
 This [Sublime Text 3](https://www.sublimetext.com/3) plugin provides citation search and Tab-completion for citations stored in a BibTeX file. Configure the file path and you are good to go!
 
@@ -8,8 +8,8 @@ Uses the [bibtexparser](https://github.com/sciunto/python-bibtexparser) library 
 
 # Configuration
 
-You must specify the location of your bibtex file in preferences. 
-Optionally you can define the bibtex fields to search in when using Citer: Search, the default citation format, and the list of scopes to limit the operation of the plugin (by default, Citer will only suggest citations within plain text scopes and is disabled in source code).
+You must specify the location of your BibTeX file in preferences. 
+Optionally you can define the BibTeX fields to search in when using Citer: Search, the default citation format, and the list of scopes to limit the operation of the plugin (by default, Citer will only suggest citations within plain text scopes and is disabled in source code).
 
 See below for example configuration
 
@@ -39,7 +39,7 @@ See below for example configuration
 
 **Citer: Search** - enter a search term. All results where the term is found in the author, title, citekey, or year fields will be shown (the searched fields are configurable)
 
-**Citer: Show All** - show all the entries in your bibtex in a quick view (you can then search in the title)
+**Citer: Show All** - show all the entries in your BibTeX in a quick view (you can then search in the title)
 
 # Completions
 
