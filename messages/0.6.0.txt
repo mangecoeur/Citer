@@ -1,6 +1,6 @@
 Citer 0.6.0
 ===========
 
-- Supports multiple Bibtex files. the `"bibtex_file_path"` option accepts a list of paths as well as a single path.
-- Possible to customise library quickview format with `""quickview_format"` option
-- New commands: Insert Title and Merge Adjacent citations (see Readme)
+- Supports multiple BibTeX files. The `"bibtex_file_path"` option accepts a list of paths as well as a single path.
+- Possible to customise library quickview format with `"quickview_format"` option
+- New commands: Insert Title and Merge Adjacent citations (see [Readme](https://github.com/mangecoeur/Citer/blob/master/README.md))
