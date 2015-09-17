@@ -1,0 +1,4 @@
+Citer 0.6.2
+===========
+
+- Fix bug with multiple citations files resulting in doubled entries

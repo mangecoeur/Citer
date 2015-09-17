@@ -102,6 +102,7 @@ def refresh_caches():
         for single_path in BIBFILE_PATH:
             modified = modified or bibfile_modifed(single_path)
         if modified:
+            _DOCUMENTS = []
             for single_path in BIBFILE_PATH:
                 _DOCUMENTS += load_bibfile(single_path)
     else:
