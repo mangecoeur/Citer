@@ -36,6 +36,8 @@ PANDOC_FIX = None
 EXCLUDE = None
 
 # Internal Cache globals
+_PAPERS = {}
+_YAMLBIB_PATH = None
 _LST_MOD_TIME = {}
 _DOCUMENTS = []
 _MENU = None
@@ -56,8 +58,6 @@ def plugin_loaded():
 
     settings = sublime.load_settings('Citer.sublime-settings')
     BIBFILE_PATH = settings.get('bibtex_file_path')
-    if BIBFILE_PATH is None or BIBFILE_PATH == '':
-        sublime.status_message("WARNING: No BibTex file configured for Citer")
     SEARCH_IN = settings.get('search_fields', ["author", "title", "year", "id"])
     CITATION_FORMAT = settings.get('citation_format', "@%s")
     COMPLETIONS_SCOPES = settings.get('completions_scopes', ['text.html.markdown'])
@@ -71,6 +71,58 @@ def plugin_loaded():
 def plugin_unloaded():
     pass
 
+# Papers
+
+def load_yamlbib_path(view):
+    global _PAPERS
+    global _YAMLBIB_PATH
+
+    filename = view.file_name()
+    if filename not in _PAPERS:
+        _PAPERS[filename] = Paper(view)
+    
+    _YAMLBIB_PATH = _PAPERS[filename].bibpath()
+
+class Paper:
+
+    _filepath = None
+    _bibpath = None
+    _modified = None
+
+    def __init__(self, view):
+        self.view = view
+        self._filepath = view.file_name()
+
+    def bibpath(self):
+
+        modified = os.path.getmtime(self._filepath)
+        if self._modified != modified:
+            self._modified = modified
+            self._bibpath = None
+
+            text = self.view.substr(sublime.Region(0, self.view.size()))
+            yamlP = re.compile(r'^---$.*?((^---$)|(^\.\.\.$))', re.MULTILINE | re.DOTALL)
+            yamlMatch = yamlP.search(text)
+
+            if yamlMatch:
+
+                bibP = re.compile(r'^bibliography:', re.MULTILINE)
+                bibMatch = bibP.search(yamlMatch.group())
+
+                if bibMatch:
+                    
+                    text = yamlMatch.group()[bibMatch.end():]
+                    pathP = re.compile(r'\S+')
+                    pathMatch = pathP.search(text)
+
+                    if pathMatch:
+
+                        folder = os.path.dirname(os.path.realpath(self._filepath))
+                        self._bibpath = os.path.join(folder, pathMatch.group())
+
+        return self._bibpath
+
+# Bibfiles
 
 def bibfile_modifed(bib_path):
     global _LST_MOD_TIME
@@ -96,18 +148,26 @@ def refresh_caches():
     global _MENU
     global _CITEKEYS
 
-    if isinstance(BIBFILE_PATH, list):
+    paths = []
+    if BIBFILE_PATH is not None:
+        if isinstance(BIBFILE_PATH, list):
+            paths += BIBFILE_PATH
+        else:
+            paths.append(BIBFILE_PATH)
+    if _YAMLBIB_PATH is not None:
+        paths.append(_YAMLBIB_PATH)
+
+    if len(paths) == 0:
+        sublime.status_message("WARNING: No BibTex file configured for Citer")
+    else:
         # To avoid duplicate entries, if any bibfiles modified, reload all of them
         modified = False
-        for single_path in BIBFILE_PATH:
+        for single_path in paths:
             modified = modified or bibfile_modifed(single_path)
         if modified:
             _DOCUMENTS = []
-            for single_path in BIBFILE_PATH:
+            for single_path in paths:
                 _DOCUMENTS += load_bibfile(single_path)
-    else:
-        if bibfile_modifed(BIBFILE_PATH):
-            _DOCUMENTS = load_bibfile(BIBFILE_PATH)
 
     _CITEKEYS = [doc.get('id') for doc in _DOCUMENTS]
     _MENU = _make_citekey_menu_list(_DOCUMENTS)
@@ -294,6 +354,8 @@ class CiterCompleteCitationEventListener(sublime_plugin.EventListener):
     def on_query_completions(self, view, prefix, loc):
         if ENABLE_COMPLETIONS and any(view.match_selector(loc[0],
                                                           scope) for scope in COMPLETIONS_SCOPES):
+            load_yamlbib_path(view)
+
             search = prefix.replace('@', '').lower()
 
             results = [[key, key] for key in citekeys_list() if search in key.lower()]
