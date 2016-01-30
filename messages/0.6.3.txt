@@ -1,0 +1,4 @@
+Citer 0.6.3
+===========
+
+Added YAML bibtex file support (@Anderas)

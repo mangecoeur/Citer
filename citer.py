@@ -83,6 +83,7 @@ def load_yamlbib_path(view):
     
     _YAMLBIB_PATH = _PAPERS[filename].bibpath()
 
+
 class Paper:
 
     _filepath = None
@@ -137,6 +138,10 @@ def bibfile_modifed(bib_path):
 
 
 def load_bibfile(bib_path):
+    if bib_path is None:
+        sublime.status_message("WARNING: No BibTex file configured for Citer")
+        return {}
+
     bib_path = bib_path.strip()
     with open(bib_path, 'r', encoding="utf-8") as bibfile:
         bp = BibTexParser(bibfile.read(), customization=convert_to_unicode)
