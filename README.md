@@ -8,7 +8,7 @@ Uses the [bibtexparser](https://github.com/sciunto/python-bibtexparser) library 
 
 # Configuration
 
-You must specify the location of your BibTeX file or files in preferences. Multiple files can be added as a list.
+You must specify the location of your BibTeX file or files in the `Citer-sublime-settings` preferences file. Multiple files can be added as a list.
 
 Optionally you can define 
 - `search_fields` the BibTeX fields to search in when using Citer: Search
