@@ -4,7 +4,7 @@ import sublime_plugin
 
 import sys
 import os.path
-import string
+import string, re
 
 # ST3 loads each package as a module, so it needs an extra prefix
 
