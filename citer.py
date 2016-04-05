@@ -32,6 +32,8 @@ CITATION_FORMAT = None
 QUICKVIEW_FORMAT = None
 ENABLE_COMPLETIONS = None
 COMPLETIONS_SCOPES = None
+EXCLUDED_SCOPES = None
+
 PANDOC_FIX = None
 EXCLUDE = None
 
@@ -51,6 +53,8 @@ def plugin_loaded():
     global SEARCH_IN
     global CITATION_FORMAT
     global COMPLETIONS_SCOPES
+    global EXCLUDED_SCOPES
+
     global ENABLE_COMPLETIONS
     global EXCLUDE
     global PANDOC_FIX
@@ -61,6 +65,8 @@ def plugin_loaded():
     SEARCH_IN = settings.get('search_fields', ["author", "title", "year", "id"])
     CITATION_FORMAT = settings.get('citation_format', "@%s")
     COMPLETIONS_SCOPES = settings.get('completions_scopes', ['text.html.markdown'])
+    EXCLUDED_SCOPES = settings.get('excluded_scopes', [])
+
     ENABLE_COMPLETIONS = settings.get('enable_completions', True)
     QUICKVIEW_FORMAT = settings.get('quickview_format', '{citekey} - {title}')
     PANDOC_FIX = settings.get('auto_merge_citations', False)
@@ -357,8 +363,11 @@ class CiterCompleteCitationEventListener(sublime_plugin.EventListener):
     """docstring for CiterCompleteCitationEventListener"""
 
     def on_query_completions(self, view, prefix, loc):
-        if ENABLE_COMPLETIONS and any(view.match_selector(loc[0],
-                                                          scope) for scope in COMPLETIONS_SCOPES):
+        
+        in_scope = any(view.match_selector(loc[0], scope) for scope in COMPLETIONS_SCOPES)
+        ex_scope = any(view.match_selector(loc[0], scope) for scope in EXCLUDED_SCOPES)
+        
+        if ENABLE_COMPLETIONS and in_scope and not ex_scope:
             load_yamlbib_path(view)
 
             search = prefix.replace('@', '').lower()
