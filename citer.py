@@ -144,7 +144,9 @@ def load_bibfile(bib_path):
 
     bib_path = bib_path.strip()
     with open(bib_path, 'r', encoding="utf-8") as bibfile:
-        bp = BibTexParser(bibfile.read(), customization=convert_to_unicode)
+        bp = BibTexParser(bibfile.read(),
+                          customization=convert_to_unicode,
+                          ignore_nonstandard_types=False)
         return list(bp.get_entry_list())
 
 
