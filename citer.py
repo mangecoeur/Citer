@@ -164,9 +164,9 @@ def refresh_caches():
     paths = []
     if BIBFILE_PATH is not None:
         if isinstance(BIBFILE_PATH, list):
-            paths += BIBFILE_PATH
+            paths += [os.path.expandvars(path) for path in BIBFILE_PATH]
         else:
-            paths.append(BIBFILE_PATH)
+            paths.append(os.path.expandvars(BIBFILE_PATH))
     if _YAMLBIB_PATH is not None:
         paths.append(_YAMLBIB_PATH)
 
