@@ -61,14 +61,14 @@ def plugin_loaded():
     global QUICKVIEW_FORMAT
     settings = sublime.load_settings('Citer.sublime-settings')
 
-    def get_settings(setting):
+    def get_settings(setting, default):
         project_data = sublime.active_window().project_data()
         if project_data and setting in project_data:
             return project_data[setting]
         else:
-            return settings.get(setting)
+            return settings.get(setting, default)
 
-    BIBFILE_PATH = get_settings('bibtex_file_path')
+    BIBFILE_PATH = get_settings('bibtex_file_path', None)
     SEARCH_IN = get_settings('search_fields', ["author", "title", "year", "id"])
     CITATION_FORMAT = get_settings('citation_format', "@%s")
     COMPLETIONS_SCOPES = get_settings('completions_scopes', ['text.html.markdown'])
