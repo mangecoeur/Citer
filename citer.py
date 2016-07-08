@@ -59,18 +59,25 @@ def plugin_loaded():
     global EXCLUDE
     global PANDOC_FIX
     global QUICKVIEW_FORMAT
-
     settings = sublime.load_settings('Citer.sublime-settings')
-    BIBFILE_PATH = settings.get('bibtex_file_path')
-    SEARCH_IN = settings.get('search_fields', ["author", "title", "year", "id"])
-    CITATION_FORMAT = settings.get('citation_format', "@%s")
-    COMPLETIONS_SCOPES = settings.get('completions_scopes', ['text.html.markdown'])
-    EXCLUDED_SCOPES = settings.get('excluded_scopes', [])
 
-    ENABLE_COMPLETIONS = settings.get('enable_completions', True)
-    QUICKVIEW_FORMAT = settings.get('quickview_format', '{citekey} - {title}')
-    PANDOC_FIX = settings.get('auto_merge_citations', False)
-    EXCLUDE = settings.get('hide_other_completions', True)
+    def get_settings(setting):
+        project_data = sublime.active_window().project_data()
+        if project_data and setting in project_data:
+            return project_data[setting]
+        else:
+            return settings.get(setting)
+
+    BIBFILE_PATH = get_settings('bibtex_file_path')
+    SEARCH_IN = get_settings('search_fields', ["author", "title", "year", "id"])
+    CITATION_FORMAT = get_settings('citation_format', "@%s")
+    COMPLETIONS_SCOPES = get_settings('completions_scopes', ['text.html.markdown'])
+    EXCLUDED_SCOPES = get_settings('excluded_scopes', [])
+
+    ENABLE_COMPLETIONS = get_settings('enable_completions', True)
+    QUICKVIEW_FORMAT = get_settings('quickview_format', '{citekey} - {title}')
+    PANDOC_FIX = get_settings('auto_merge_citations', False)
+    EXCLUDE = get_settings('hide_other_completions', True)
     refresh_caches()
 
 
@@ -86,7 +93,7 @@ def load_yamlbib_path(view):
     filename = view.file_name()
     if filename not in _PAPERS:
         _PAPERS[filename] = Paper(view)
-    
+
     _YAMLBIB_PATH = _PAPERS[filename].bibpath()
 
 
@@ -117,7 +124,7 @@ class Paper:
                 bibMatch = bibP.search(yamlMatch.group())
 
                 if bibMatch:
-                    
+
                     text = yamlMatch.group()[bibMatch.end():]
                     pathP = re.compile(r'\S+')
                     pathMatch = pathP.search(text)
@@ -365,10 +372,10 @@ class CiterCompleteCitationEventListener(sublime_plugin.EventListener):
     """docstring for CiterCompleteCitationEventListener"""
 
     def on_query_completions(self, view, prefix, loc):
-        
+
         in_scope = any(view.match_selector(loc[0], scope) for scope in COMPLETIONS_SCOPES)
         ex_scope = any(view.match_selector(loc[0], scope) for scope in EXCLUDED_SCOPES)
-        
+
         if ENABLE_COMPLETIONS and in_scope and not ex_scope:
             load_yamlbib_path(view)
 
