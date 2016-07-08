@@ -49,35 +49,7 @@ _CITEKEYS = None
 def plugin_loaded():
     """Called directly from sublime on plugin load
     """
-    global BIBFILE_PATH
-    global SEARCH_IN
-    global CITATION_FORMAT
-    global COMPLETIONS_SCOPES
-    global EXCLUDED_SCOPES
-
-    global ENABLE_COMPLETIONS
-    global EXCLUDE
-    global PANDOC_FIX
-    global QUICKVIEW_FORMAT
-    settings = sublime.load_settings('Citer.sublime-settings')
-
-    def get_settings(setting, default):
-        project_data = sublime.active_window().project_data()
-        if project_data and setting in project_data:
-            return project_data[setting]
-        else:
-            return settings.get(setting, default)
-
-    BIBFILE_PATH = get_settings('bibtex_file_path', None)
-    SEARCH_IN = get_settings('search_fields', ["author", "title", "year", "id"])
-    CITATION_FORMAT = get_settings('citation_format', "@%s")
-    COMPLETIONS_SCOPES = get_settings('completions_scopes', ['text.html.markdown'])
-    EXCLUDED_SCOPES = get_settings('excluded_scopes', [])
-
-    ENABLE_COMPLETIONS = get_settings('enable_completions', True)
-    QUICKVIEW_FORMAT = get_settings('quickview_format', '{citekey} - {title}')
-    PANDOC_FIX = get_settings('auto_merge_citations', False)
-    EXCLUDE = get_settings('hide_other_completions', True)
+    refresh_settings()
     refresh_caches()
 
 
@@ -85,6 +57,7 @@ def plugin_unloaded():
     pass
 
 # Papers
+
 
 def load_yamlbib_path(view):
     global _PAPERS
@@ -138,6 +111,7 @@ class Paper:
 
 # Bibfiles
 
+
 def bibfile_modifed(bib_path):
     global _LST_MOD_TIME
     bib_path = bib_path.strip()
@@ -163,11 +137,42 @@ def load_bibfile(bib_path):
         return list(bp.get_entry_list())
 
 
+def refresh_settings():
+    global BIBFILE_PATH
+    global SEARCH_IN
+    global CITATION_FORMAT
+    global COMPLETIONS_SCOPES
+    global EXCLUDED_SCOPES
+
+    global ENABLE_COMPLETIONS
+    global EXCLUDE
+    global PANDOC_FIX
+    global QUICKVIEW_FORMAT
+
+    def get_settings(setting, default):
+        project_data = sublime.active_window().project_data()
+        if project_data and setting in project_data:
+            return project_data[setting]
+        else:
+            return settings.get(setting, default)
+
+    settings = sublime.load_settings('Citer.sublime-settings')
+    BIBFILE_PATH = get_settings('bibtex_file_path', None)
+    SEARCH_IN = get_settings('search_fields', ["author", "title", "year", "id"])
+    CITATION_FORMAT = get_settings('citation_format', "@%s")
+    COMPLETIONS_SCOPES = get_settings('completions_scopes', ['text.html.markdown'])
+    EXCLUDED_SCOPES = get_settings('excluded_scopes', [])
+
+    ENABLE_COMPLETIONS = get_settings('enable_completions', True)
+    QUICKVIEW_FORMAT = get_settings('quickview_format', '{citekey} - {title}')
+    PANDOC_FIX = get_settings('auto_merge_citations', False)
+    EXCLUDE = get_settings('hide_other_completions', True)
+
+
 def refresh_caches():
     global _DOCUMENTS
     global _MENU
     global _CITEKEYS
-
     paths = []
     if BIBFILE_PATH is not None:
         if isinstance(BIBFILE_PATH, list):
@@ -282,6 +287,7 @@ class CiterSearchCommand(sublime_plugin.TextCommand):
             self.current_results_list, self._paste)
 
     def run(self, edit):
+        refresh_settings()
         self.view.window().show_input_panel(
             "Cite search", "", self.search_keyword, None, None)
 
@@ -313,6 +319,7 @@ class CiterShowKeysCommand(sublime_plugin.TextCommand):
     current_results_list = []
 
     def run(self, edit):
+        refresh_settings()
         ctk = citekeys_menu()
         if len(ctk) > 0:
             self.current_results_list = ctk
@@ -346,6 +353,7 @@ class CiterGetTitleCommand(sublime_plugin.TextCommand):
     current_results_list = []
 
     def run(self, edit):
+        refresh_settings()
         ctk = citekeys_menu()
         if len(ctk) > 0:
             self.current_results_list = ctk
@@ -392,6 +400,7 @@ class CiterCompleteCitationEventListener(sublime_plugin.EventListener):
 class CiterCombineCitationsCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
+        refresh_settings()
         lstpos = self.view.find_all(r'\]\[')
         for i, pos in reversed(list(enumerate(lstpos))):
             self.view.replace(edit, pos, r'; ')
