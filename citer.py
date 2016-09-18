@@ -49,28 +49,7 @@ _CITEKEYS = None
 def plugin_loaded():
     """Called directly from sublime on plugin load
     """
-    global BIBFILE_PATH
-    global SEARCH_IN
-    global CITATION_FORMAT
-    global COMPLETIONS_SCOPES
-    global EXCLUDED_SCOPES
-
-    global ENABLE_COMPLETIONS
-    global EXCLUDE
-    global PANDOC_FIX
-    global QUICKVIEW_FORMAT
-
-    settings = sublime.load_settings('Citer.sublime-settings')
-    BIBFILE_PATH = settings.get('bibtex_file_path')
-    SEARCH_IN = settings.get('search_fields', ["author", "title", "year", "id"])
-    CITATION_FORMAT = settings.get('citation_format', "@%s")
-    COMPLETIONS_SCOPES = settings.get('completions_scopes', ['text.html.markdown'])
-    EXCLUDED_SCOPES = settings.get('excluded_scopes', [])
-
-    ENABLE_COMPLETIONS = settings.get('enable_completions', True)
-    QUICKVIEW_FORMAT = settings.get('quickview_format', '{citekey} - {title}')
-    PANDOC_FIX = settings.get('auto_merge_citations', False)
-    EXCLUDE = settings.get('hide_other_completions', True)
+    refresh_settings()
     refresh_caches()
 
 
@@ -79,6 +58,7 @@ def plugin_unloaded():
 
 # Papers
 
+
 def load_yamlbib_path(view):
     global _PAPERS
     global _YAMLBIB_PATH
@@ -86,7 +66,7 @@ def load_yamlbib_path(view):
     filename = view.file_name()
     if filename not in _PAPERS:
         _PAPERS[filename] = Paper(view)
-    
+
     _YAMLBIB_PATH = _PAPERS[filename].bibpath()
 
 
@@ -117,7 +97,7 @@ class Paper:
                 bibMatch = bibP.search(yamlMatch.group())
 
                 if bibMatch:
-                    
+
                     text = yamlMatch.group()[bibMatch.end():]
                     pathP = re.compile(r'\S+')
                     pathMatch = pathP.search(text)
@@ -130,6 +110,7 @@ class Paper:
         return self._bibpath
 
 # Bibfiles
+
 
 def bibfile_modifed(bib_path):
     global _LST_MOD_TIME
@@ -156,11 +137,42 @@ def load_bibfile(bib_path):
         return list(bp.get_entry_list())
 
 
+def refresh_settings():
+    global BIBFILE_PATH
+    global SEARCH_IN
+    global CITATION_FORMAT
+    global COMPLETIONS_SCOPES
+    global EXCLUDED_SCOPES
+
+    global ENABLE_COMPLETIONS
+    global EXCLUDE
+    global PANDOC_FIX
+    global QUICKVIEW_FORMAT
+
+    def get_settings(setting, default):
+        project_data = sublime.active_window().project_data()
+        if project_data and setting in project_data:
+            return project_data[setting]
+        else:
+            return settings.get(setting, default)
+
+    settings = sublime.load_settings('Citer.sublime-settings')
+    BIBFILE_PATH = get_settings('bibtex_file_path', None)
+    SEARCH_IN = get_settings('search_fields', ["author", "title", "year", "id"])
+    CITATION_FORMAT = get_settings('citation_format', "@%s")
+    COMPLETIONS_SCOPES = get_settings('completions_scopes', ['text.html.markdown'])
+    EXCLUDED_SCOPES = get_settings('excluded_scopes', [])
+
+    ENABLE_COMPLETIONS = get_settings('enable_completions', True)
+    QUICKVIEW_FORMAT = get_settings('quickview_format', '{citekey} - {title}')
+    PANDOC_FIX = get_settings('auto_merge_citations', False)
+    EXCLUDE = get_settings('hide_other_completions', True)
+
+
 def refresh_caches():
     global _DOCUMENTS
     global _MENU
     global _CITEKEYS
-
     paths = []
     if BIBFILE_PATH is not None:
         if isinstance(BIBFILE_PATH, list):
@@ -275,6 +287,7 @@ class CiterSearchCommand(sublime_plugin.TextCommand):
             self.current_results_list, self._paste)
 
     def run(self, edit):
+        refresh_settings()
         self.view.window().show_input_panel(
             "Cite search", "", self.search_keyword, None, None)
 
@@ -306,6 +319,7 @@ class CiterShowKeysCommand(sublime_plugin.TextCommand):
     current_results_list = []
 
     def run(self, edit):
+        refresh_settings()
         ctk = citekeys_menu()
         if len(ctk) > 0:
             self.current_results_list = ctk
@@ -339,6 +353,7 @@ class CiterGetTitleCommand(sublime_plugin.TextCommand):
     current_results_list = []
 
     def run(self, edit):
+        refresh_settings()
         ctk = citekeys_menu()
         if len(ctk) > 0:
             self.current_results_list = ctk
@@ -365,10 +380,10 @@ class CiterCompleteCitationEventListener(sublime_plugin.EventListener):
     """docstring for CiterCompleteCitationEventListener"""
 
     def on_query_completions(self, view, prefix, loc):
-        
+
         in_scope = any(view.match_selector(loc[0], scope) for scope in COMPLETIONS_SCOPES)
         ex_scope = any(view.match_selector(loc[0], scope) for scope in EXCLUDED_SCOPES)
-        
+
         if ENABLE_COMPLETIONS and in_scope and not ex_scope:
             load_yamlbib_path(view)
 
@@ -385,6 +400,7 @@ class CiterCompleteCitationEventListener(sublime_plugin.EventListener):
 class CiterCombineCitationsCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
+        refresh_settings()
         lstpos = self.view.find_all(r'\]\[')
         for i, pos in reversed(list(enumerate(lstpos))):
             self.view.replace(edit, pos, r'; ')
