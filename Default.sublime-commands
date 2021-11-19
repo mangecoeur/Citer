@@ -10,5 +10,9 @@
     {
         "caption": "Citer: Insert Title", 
         "command": "citer_get_title"
-    }
+    },
+	{
+		"caption": "Citer: Combine Citations",
+		"command": "citer_combine_citations"
+	}
 ]
