@@ -56,9 +56,6 @@ def plugin_loaded():
 def plugin_unloaded():
     pass
 
-# Papers
-
-
 def load_yamlbib_path(view):
     global _PAPERS
     global _YAMLBIB_PATH
@@ -151,8 +148,18 @@ def refresh_settings():
 
     def get_settings(setting, default):
         project_data = sublime.active_window().project_data()
+        # Check whether there is a project-specific override
+        if setting == 'bibtex_file_path':
+            setting = 'bibtex_file'
+            
         if project_data and setting in project_data:
-            return project_data[setting]
+            if setting == 'bibtex_file':
+                window = sublime.active_window()
+                ref_dir = os.path.dirname(window.project_file_name())
+                result = ref_dir + '/' + project_data['bibtex_file']
+                return result
+            else:
+                return project_data[setting]
         else:
             return settings.get(setting, default)
 
