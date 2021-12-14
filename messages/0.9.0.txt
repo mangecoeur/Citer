@@ -1,0 +1,4 @@
+Citer 0.9.0
+===========
+
+- Adding projectbased bibtex-file option. (@dhufe)
