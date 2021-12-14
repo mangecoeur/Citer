@@ -23,7 +23,7 @@ if os.path.dirname(__file__) not in sys.path:
 
 from bibtexparser.bparser import BibTexParser
 from bibtexparser.customization import convert_to_unicode
-
+from lib import md2bib
 
 # settings cache globals
 BIBFILE_PATH = None
@@ -418,3 +418,18 @@ class CiterCombineCitationsCommand(sublime_plugin.TextCommand):
         lstpos = self.view.find_all(r'\]\[')
         for i, pos in reversed(list(enumerate(lstpos))):
             self.view.replace(edit, pos, r'; ')
+
+
+class CiterExtractCitationsCommand(sublime_plugin.TextCommand):
+
+    def run(self, edit):
+        refresh_settings()
+        current_file = sublime.active_window().active_view().file_name()
+        # split off extension
+        basefile, extension = os.path.splitext(current_file)
+        bibsubset_file = basefile + '.bib'
+        
+        md2bib.extract_bibliography(current_file, BIBFILE_PATH, bibsubset_file)
+        _, fname = os.path.split(bibsubset_file)
+        
+        sublime.status_message('Extracted citations to {}'.format(fname))

@@ -14,5 +14,9 @@
 	{
 		"caption": "Citer: Combine Citations",
 		"command": "citer_combine_citations"
-	}
+	},
+    {
+        "caption": "Citer: Extract used citations",
+        "command": "citer_extract_citations"
+    }
 ]
