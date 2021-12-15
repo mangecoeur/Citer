@@ -160,7 +160,7 @@ def refresh_settings():
                 window = sublime.active_window()
                 ref_dir = os.path.dirname(window.project_file_name())
                 filename = project_data['bibtex_file']
-                result = ref_dir + '\\' + filename.replace('\'', '')
+                result = ref_dir + '/' + filename.replace('\'', '')
                 return result
             else:
                 return project_data[setting]
