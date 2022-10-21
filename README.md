@@ -25,7 +25,7 @@ See below for example (default) configuration
 {
     //REQUIRED:
 
-    "bibtex_file_path": "example/path/to/file.bib",
+    "bibtex_file ": "example/path/to/file.bib",
     // You can also specify a list
     //"bibtex_file_path": ["example/path/to/file.bib", "example/path/to/fileTwo.bib"],
 
