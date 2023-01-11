@@ -14,6 +14,7 @@ Optionally you can define
 - `search_fields` the BibTeX fields to search in when using Citer: Search
 - `citation_format` the citation format
 - `completions_scopes` the list of scopes to limit the operation of the plugin (by default, Citer will only suggest citations within plain text scopes and is disabled in source code)
+- `excluded_scopes` list of scopes to explicitly exclude from Citer completions
 - `enable_completions` enable/disable citation completions (when you hit @)
 - `quickview_format` customise the format when listing library entries in the quickview panel (e.g. with the Citer: Show All command). Place variables between `{}` braces. Available variables are `citekey`, `title`, `author`, `year`.
 - `auto_merge_citations` Whether to automatically merge citations that are inserted next to each other. `[@Fred2000][@Mary2001]` becomes `[@Fred2000; @Mary2001]`. Equivalent to running `Citer: Combine adjacent citations` on every insert
@@ -42,7 +43,8 @@ See below for example (default) configuration
     "enable_completions": true,
     //Customise the quickview of you library, using python format syntax
     "quickview_format": "{citekey} - {title}",
-    "auto_merge_citations": false
+    "auto_merge_citations": false,
+    "excluded_scopes": [],
 }
 ```
 
