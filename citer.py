@@ -23,7 +23,7 @@ if os.path.dirname(__file__) not in sys.path:
 
 from bibtexparser.bparser import BibTexParser
 from bibtexparser.customization import convert_to_unicode
-
+from lib import md2bib
 
 # settings cache globals
 BIBFILE_PATH = None
@@ -111,7 +111,9 @@ class Paper:
 
 def bibfile_modifed(bib_path):
     global _LST_MOD_TIME
-    bib_path = bib_path.strip()
+    
+    bib_path = bib_path.replace('\'','').strip()
+
     last_modified_time = os.path.getmtime(bib_path)
     cached_modifed_time = _LST_MOD_TIME.get(bib_path)
     if cached_modifed_time is None or last_modified_time != cached_modifed_time:
@@ -126,8 +128,9 @@ def load_bibfile(bib_path):
         sublime.status_message("WARNING: No BibTex file configured for Citer")
         return {}
 
-    bib_path = bib_path.strip()
-    with open(bib_path, 'r', encoding="utf-8") as bibfile:
+    bib_path = bib_path.replace('\'','').strip()
+
+    with open( bib_path, 'r', encoding="utf-8") as bibfile:
         bp = BibTexParser(bibfile.read(),
                           customization=convert_to_unicode,
                           ignore_nonstandard_types=False)
@@ -156,7 +159,8 @@ def refresh_settings():
             if setting == 'bibtex_file':
                 window = sublime.active_window()
                 ref_dir = os.path.dirname(window.project_file_name())
-                result = ref_dir + '/' + project_data['bibtex_file']
+                filename = project_data['bibtex_file']
+                result = ref_dir + '/' + filename.replace('\'', '')
                 return result
             else:
                 return project_data[setting]
@@ -164,6 +168,7 @@ def refresh_settings():
             return settings.get(setting, default)
 
     settings = sublime.load_settings('Citer.sublime-settings')
+
     BIBFILE_PATH = get_settings('bibtex_file_path', None)
     SEARCH_IN = get_settings('search_fields', ["author", "title", "year", "id"])
     CITATION_FORMAT = get_settings('citation_format', "@%s")
@@ -388,6 +393,8 @@ class CiterCompleteCitationEventListener(sublime_plugin.EventListener):
 
     def on_query_completions(self, view, prefix, loc):
 
+        refresh_settings()
+
         in_scope = any(view.match_selector(loc[0], scope) for scope in COMPLETIONS_SCOPES)
         ex_scope = any(view.match_selector(loc[0], scope) for scope in EXCLUDED_SCOPES)
 
@@ -411,3 +418,18 @@ class CiterCombineCitationsCommand(sublime_plugin.TextCommand):
         lstpos = self.view.find_all(r'\]\[')
         for i, pos in reversed(list(enumerate(lstpos))):
             self.view.replace(edit, pos, r'; ')
+
+
+class CiterExtractCitationsCommand(sublime_plugin.TextCommand):
+
+    def run(self, edit):
+        refresh_settings()
+        current_file = sublime.active_window().active_view().file_name()
+        # split off extension
+        basefile, extension = os.path.splitext(current_file)
+        bibsubset_file = basefile + '.bib'
+        
+        md2bib.extract_bibliography(current_file, BIBFILE_PATH, bibsubset_file)
+        _, fname = os.path.split(bibsubset_file)
+        
+        sublime.status_message('Extracted citations to {}'.format(fname))
