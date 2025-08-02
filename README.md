@@ -12,18 +12,13 @@
 - **Auto-Completion Insertion Settings**:
   - Added an option to control the format of auto-completion when using Tab/Enter. You can now choose from the following:
 
-    - **CiteKey only**: Inserts only the citation key (e.g., "@gandhi1933").
-    - **Title only**: Inserts only the title (e.g., "Truth, non-violence, and social justice.").
-    - **Both**: Inserts both the citation key and the title (e.g., "@gandhi1933 Truth, non-violence, and social justice.").
+    - "citekey": Inserts only the citation key (e.g., "@gandhi1933").
+    - "title": Inserts only the title (e.g., "Truth, non-violence, and social justice.").
+    - "both": Inserts both the citation key and the title (e.g., "@gandhi1933 Truth, non-violence, and social justice.").
 
-  ```json
-  // Configuration for auto-completion insertion
-  // Options:
-  //   "citekey" - Insert only the citation key (e.g., "@gandhi1933")
-  //   "title"   - Insert only the title (e.g., "Truth, non-violence, and social justice.")
-  //   "both"    - Insert both citation key and title (e.g., "@gandhi1933 "Truth, non-violence, and social justice.")
-  // "completion_type": "citekey",
-  ```
+    ```json
+    "completion_type": "citekey",
+    ```
 
 ---
 
