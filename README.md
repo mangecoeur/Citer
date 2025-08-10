@@ -1,5 +1,27 @@
 # Citations from BibTeX for Sublime Text
 
+---
+
+2025-08-02 15:00
+
+### New Features: 
+
+- **Reverse Lookup for Citations**:
+  - Hover over the citation key in your document to display a popup with the full title, author, and abstract (if available).
+
+- **Auto-Completion Insertion Settings**:
+  - Added an option to control the format of auto-completion when using Tab/Enter. You can now choose from the following:
+
+    - "citekey": Inserts only the citation key (e.g., "@gandhi1933").
+    - "title": Inserts only the title (e.g., "Truth, non-violence, and social justice.").
+    - "both": Inserts both the citation key and the title (e.g., "@gandhi1933 Truth, non-violence, and social justice.").
+
+    ```json
+    "completion_type": "citekey",
+    ```
+
+---
+
 This [Sublime Text 3](https://www.sublimetext.com/3) plugin provides citation search and Tab-completion for citations stored in a BibTeX file. Configure the file path and you are good to go!
 
 The default set up is optimized to work with [AcademicMarkdown](https://github.com/mangecoeur/AcademicMarkdown).
